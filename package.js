@@ -12,7 +12,7 @@ Package.on_use(function(api){
   api.use([
     'jquery',
     'deps',
-    'iron:router'
+    'iron:router@1.0.0'
   ], 'client');
 
   api.addFiles([
