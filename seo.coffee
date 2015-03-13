@@ -25,6 +25,8 @@ SEO =
     @clearAll() if clearBefore
 
     currentRouter = Router.current()
+    return unless currentRouter.route
+
     url = Router.url(currentRouter.route.getName(), currentRouter.params) if currentRouter
     #SEO.set({url: Router.url(currentRouter.route.name, currentRouter.params)})
 
