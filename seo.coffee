@@ -1,3 +1,23 @@
+RouterWrapper = (->
+  isFlowRouter = false
+  if Package?['iron:router']?
+    instance = Package['iron:router'].Router;
+  else if Package?['kadira:flow-router']?
+    isFlowRouter = true
+    instance = Package['kadira:flow-router'].FlowRouter
+  else
+    throw new Error 'konecty:seo depends on iron:router or kadira:flow-router to work.'
+
+  return {
+
+    instance: ->
+      return instance;
+
+    isFlowRouter: ->
+      return isFlowRouter;
+  }
+)()
+
 SEO =
   settings: {
     title: ''
@@ -24,11 +44,12 @@ SEO =
   set: (options, clearBefore=true) ->
     @clearAll() if clearBefore
 
-    currentRouter = Router.current()
+    routerInstance = RouterWrapper.instance();
+
+    currentRouter = routerInstance.current()
     return unless currentRouter?.route?
 
-    url = Router.url(currentRouter.route.getName(), currentRouter.params) if currentRouter
-    #SEO.set({url: Router.url(currentRouter.route.name, currentRouter.params)})
+    url = routerInstance.url(getCurrentRouteName(), currentRouter.params) if currentRouter
 
     meta = options.meta
     og = options.og
@@ -153,22 +174,26 @@ escapeHtmlAttribute = (string) ->
   return ("" + string).replace(/'/g, "&apos;").replace(/"/g, "&quot;")
 
 getCurrentRouteName = ->
-  router = Router.current()
-  return unless router?.route?
-  routeName = router.route.getName()
-  return routeName
+  currentRouter = RouterWrapper.instance().current()
+  return unless currentRouter?.route?
+
+  unless RouterWrapper.isFlowRouter()
+    return currentRouter.route.getName()
+  else
+    return RouterWrapper.instance().getRouteName()
 
 # Get seo settings depending on route
-Deps.autorun( ->
-  currentRouteName = getCurrentRouteName()
-  return unless currentRouteName
-  Meteor.subscribe('seoByRouteName', currentRouteName)
-)
+Meteor.startup ->
+  Tracker.autorun ->
+    currentRouteName = getCurrentRouteName()
+    return unless currentRouteName
+    Meteor.subscribe('seoByRouteName', currentRouteName)
 
-# Set seo settings depending on route
-Deps.autorun( ->
-  return unless SEO
-  currentRouteName = getCurrentRouteName()
-  settings = SeoCollection.findOne({route_name: currentRouteName}) or {}
-  SEO.set(settings)
-)
+  # Set seo settings depending on route
+  Tracker.autorun ->
+    return unless SEO
+    currentRouteName = getCurrentRouteName()
+    return unless currentRouteName
+    settings = SeoCollection.findOne({route_name: currentRouteName}) or {}
+    SEO.set(settings)
+
