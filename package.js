@@ -11,6 +11,7 @@ Package.on_use(function(api){
   api.use(['coffeescript', 'underscore', 'mongo'], ['client', 'server']);
   api.use(['iron:router'], ['client', 'server'], { weak: true });
   api.use(['kadira:flow-router'], ['client', 'server'], { weak: true });
+  api.use(['kadira:flow-router-ssr'], ['client', 'server'], { weak: true });
 
   api.use(['jquery'], 'client');
 

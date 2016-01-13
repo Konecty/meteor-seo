@@ -5,8 +5,11 @@ RouterWrapper = (->
   else if Package?['kadira:flow-router']?
     isFlowRouter = true
     instance = Package['kadira:flow-router'].FlowRouter
+  else if Package?['kadira:flow-router-ssr']?
+    isFlowRouter = true
+    instance = Package['kadira:flow-router-ssr'].FlowRouter
   else
-    throw new Error 'konecty:seo depends on iron:router or kadira:flow-router to work.'
+    throw new Error 'konecty:seo depends on iron:router or kadira:flow-router[-ssr] to work.'
 
   return {
 
